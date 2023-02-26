@@ -28,7 +28,7 @@ CREATE TABLE `categoria` (
   `idcategoria` int NOT NULL AUTO_INCREMENT,
   `nombreCategoria` varchar(45) NOT NULL,
   PRIMARY KEY (`idcategoria`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -49,7 +49,7 @@ CREATE TABLE `concepto` (
   KEY `fk_concepto_Categoria1_idx` (`idcategoria`),
   CONSTRAINT `fk_concepto_Categoria1` FOREIGN KEY (`idcategoria`) REFERENCES `categoria` (`idcategoria`),
   CONSTRAINT `fk_concepto_usuario1` FOREIGN KEY (`idusuario`) REFERENCES `usuario` (`idusuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,7 +71,7 @@ CREATE TABLE `datosUsuario` (
   PRIMARY KEY (`iddatosUsuario`,`idusuario`),
   KEY `fk_datosUsuario_usuario_idx` (`idusuario`),
   CONSTRAINT `fk_datosUsuario_usuario` FOREIGN KEY (`idusuario`) REFERENCES `usuario` (`idusuario`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -85,7 +85,7 @@ CREATE TABLE `mes` (
   `idmes` int NOT NULL AUTO_INCREMENT,
   `nombreMes` varchar(45) NOT NULL,
   PRIMARY KEY (`idmes`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -131,7 +131,7 @@ CREATE TABLE `periodo` (
   `idperiodo` int NOT NULL AUTO_INCREMENT,
   `periodo` int NOT NULL,
   PRIMARY KEY (`idperiodo`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -157,7 +157,7 @@ CREATE TABLE `presupuesto` (
   CONSTRAINT `fk_presupuesto_concepto1` FOREIGN KEY (`idconcepto`, `idusuario`) REFERENCES `concepto` (`idconcepto`, `idusuario`),
   CONSTRAINT `fk_presupuesto_mes1` FOREIGN KEY (`idmes`) REFERENCES `mes` (`idmes`),
   CONSTRAINT `fk_presupuesto_periodo1` FOREIGN KEY (`idperiodo`) REFERENCES `periodo` (`idperiodo`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=278 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -175,7 +175,7 @@ CREATE TABLE `usuario` (
   `creado_el` datetime NOT NULL,
   `modificado_el` datetime NOT NULL,
   PRIMARY KEY (`idusuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -193,6 +193,25 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `concepto`,
  1 AS `valorPresupuesto`,
  1 AS `modificado_el`*/;
+ DELIMITER ;;
+CREATE VIEW `vpresupuesto` AS 
+ SELECT 
+        `p`.`periodo` AS `periodo`,
+        `m`.`nombreMes` AS `nombreMes`,
+        `t`.`nombreCategoria` AS `tipo`,
+        `c`.`categoria` AS `concepto`,
+        `pr`.`valorPresupuesto` AS `valorPresupuesto`,
+        `pr`.`modificado_el` AS `modificado_el`
+    FROM
+        ((((`presupuesto` `pr`
+        JOIN `periodo` `p` ON ((`pr`.`idperiodo` = `p`.`idperiodo`)))
+        JOIN `mes` `m` ON ((`pr`.`idmes` = `m`.`idmes`)))
+        JOIN `concepto` `c` ON ((`pr`.`idconcepto` = `c`.`idconcepto`)))
+        JOIN `categoria` `t` ON ((`c`.`idcategoria` = `t`.`idcategoria`)))
+    WHERE
+        (`p`.`periodo` = YEAR(SYSDATE()))
+    ORDER BY `p`.`periodo` , `pr`.`idmes`
+DELIMITER ;
 SET character_set_client = @saved_cs_client;
 
 --
